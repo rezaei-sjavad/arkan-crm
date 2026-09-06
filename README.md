@@ -49,6 +49,10 @@ CRM بر پایه‌ی **جریان کلاسیک صنعت** (الگوی Salesfor
 
 > 💡 نکته‌ی آموزشی: مدل‌های reasoning (مثل Gemini 3.5 Flash) بخشی از `maxOutputTokens` را صرف استدلال می‌کنند؛ سقف کم ⇒ خروجی JSON نیمه‌کاره. به همین دلیل سقف توابع AI بالای ۲۰۰۰ است و صفحاتی که اکشن AI دارند `maxDuration = 60` دارند. (`src/lib/crm/ai.ts`)
 
+### 💬 چت‌بات (مشترک با فاز ۲+۳)
+پیکربندی مدل به‌ازای هر کانال، سقف نرخ پایدار در دیتابیس، تحویل به انسان (`request_human` + وضعیت «نیازمند انسان» در گفتگوها)، سؤال‌های بی‌پاسخ (`/admin/gaps`)، reranker، خلاصه‌ی خودکار گفتگو، محافظ تزریق پرامپت و ساعات کاری — همه از `/admin/settings` و `/admin/models`.
+جزئیات و جدول کامل در README ریپوی چت‌بات و در `پرامپت استفاده شده/arkan-chatbot-claude-code-prompt.md` (پیوست «وضعیت پیاده‌سازی»).
+
 ### 🔐 احراز هویت چندکاربره
 - جدول `admin_users` با هش رمز **scrypt** از `node:crypto` (بدون کتابخانه‌ی اضافه).
 - کوکی نشست: payload امضاشده با HMAC-SHA256 شامل `{uid, email, role, exp}`.
@@ -86,7 +90,7 @@ src/app/admin/
   crm-actions.ts          ← همه‌ی سرور‌اکشن‌های CRM (الگوی guard → zod → عملیات → audit → revalidate)
   crm/…                   ← صفحات: contacts, companies, deals, activities, contracts, campaigns, reports, assistant
 src/app/contract/[token]/ ← صفحه‌ی عمومی برنددار قرارداد (بدون لاگین، توکن امن)
-src/app/api/crm-chat/     ← چت با CRM (streamText + tools)
+src/app/admin/api/crm-chat/ ← چت با CRM (streamText + tools). زیر /admin است تا کوکی نشست با path درست ارسال شود
 src/components/admin/crm/ ← کامپوننت‌های UI (کانبان، ۳۶۰°، ویرایشگر قرارداد، …)
 scripts/seed-crm-demo.mjs ← داده‌ی نمایشی کامل برای دمو (+ --clean)
 ```
@@ -118,6 +122,9 @@ TELEGRAM_BOT_TOKEN= / TELEGRAM_WEBHOOK_SECRET=           # (اختیاری) کا
 4. `supabase/crm-schema.sql`
 5. `supabase/contracts-schema.sql`
 6. `supabase/campaigns-schema.sql`
+7. `supabase/chatbot-upgrade.sql` — قابلیت‌های عملیاتی چت‌بات (تنظیمات، سؤال‌های بی‌پاسخ، سقف نرخ، تحویل به انسان)
+
+> ⚠️ در استقرار فعلی جدول‌ها در اسکیمای `arkan` هستند نه `public` — کلاینت با `db: { schema: "arkan" }` ساخته می‌شود (`src/lib/supabase.ts`). فقط `chatbot-upgrade.sql` با این اسکیما نوشته شده.
 
 ### داده‌ی نمایشی برای دمو
 ```bash
